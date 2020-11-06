@@ -1,6 +1,7 @@
 import configparser
 import numpy as np
 import pandas as pd
+from utils import *
 
 
 def dishwasher(seconds_tenths_in_a_day):
@@ -83,6 +84,54 @@ def washingmachine(seconds_tenths_in_a_day):
     activation_instant = int(np.random.normal(mu, sigma))
 
     # Building washingmachine data
+    for i in range(len(series)):
+        data[activation_instant + i] = series[i]
+
+    return data
+
+
+def microwave(seconds_tenths_in_a_day):
+    config = configparser.ConfigParser()
+    config.read('resources/config.ini')
+    data = np.zeros(seconds_tenths_in_a_day, dtype=None)
+
+    # With a certain probability microwave is not used during this day
+    microwave_usage_prob = float(config['usage_probabilities']['microwave_usage_prob'])
+    x = np.random.uniform()
+    if x > microwave_usage_prob:
+        return data
+
+    # Reading microwave model from configuration file
+    microwave_model = config['models']['microwave_model']
+
+    # Reading the number of possible pattern for the specified model
+    microwave_patterns = int(config['patterns_for_models']['microwave' + str(microwave_model)])
+
+    # Select a random pattern between those available and building the corresponding series
+    x = np.random.randint(1, microwave_patterns + 1)
+    filename = 'data/microwave/microwave_house' + str(microwave_model) + "_" + str(x) + ".CSV"
+    series = pd.read_csv(filename, header=None, usecols=[1])[1]
+
+    # Altering series
+    microwave_factor = float(config['alterations']['microwave_factor'])
+    microwave_noise_factor = float(config['alterations']['microwave_noise_factor'])
+    for i in range(len(series)):
+        series[i] = series[i] * np.random.uniform(microwave_factor - microwave_noise_factor,
+                                                  microwave_factor + microwave_noise_factor)
+
+    # Choosing a duration for the usage of the appliance and expand the original pattern
+    usage_duration = np.random.randint(int(config['usage_duration']['microwave_min']),
+                                       int(config['usage_duration']['microwave_max']))
+    series = interpolate(usage_duration, len(series), series)
+
+    # Choosing a start instant
+    microwave_start = int(config['usage_start']['microwave_start'])
+    microwave_end = int(config['usage_start']['microwave_end'])
+    mu = np.random.randint(microwave_start, microwave_end)
+    sigma = int(config['usage_start']['microwave_sigma'])
+    activation_instant = int(np.random.normal(mu, sigma))
+
+    # Building microwave data
     for i in range(len(series)):
         data[activation_instant + i] = series[i]
 

@@ -12,6 +12,8 @@ APPLIANCE_MAPPER = {
     # MULTI PATTERN APPLIANCES
     "dishwasher": (lambda x: dishwasher(x)),
     "washingmachine": (lambda x: washingmachine(x))
+    "dishwasher": (lambda x: dishwasher(x)),
+    "microwave": (lambda x: microwave(x)),
 }
 
 
