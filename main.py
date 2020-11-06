@@ -1,5 +1,4 @@
 import json
-import shutil
 import os
 from periodical_appliances import *
 from multi_appliances import *
@@ -58,7 +57,6 @@ if __name__ == '__main__':
         os.mkdir('target/{}'.format(settings['house_ID']))
     except FileExistsError:
         pass
-    shutil.copy('resources/appliance_labels.yml', 'target/{}'.format(settings['house_ID']))
 
     # Generate dataset
     generate_dataset()
