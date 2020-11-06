@@ -11,8 +11,7 @@ APPLIANCE_MAPPER = {
     "fridge": (lambda x: fridge(x)),
     # MULTI PATTERN APPLIANCES
     "dishwasher": (lambda x: dishwasher(x)),
-    "washingmachine": (lambda x: washingmachine(x))
-    "dishwasher": (lambda x: dishwasher(x)),
+    "washingmachine": (lambda x: washingmachine(x)),
     "microwave": (lambda x: microwave(x)),
 }
 

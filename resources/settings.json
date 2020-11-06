@@ -1,6 +1,6 @@
 {
   "appliances":["dishwasher", "fridge", "washingmachine", "microwave"],
-  "seed" : 12345,
+  "seed" : 99999,
   "house_ID" : 1,
   "simulation_days": 1,
   "sampling_interval_seconds": 1,
