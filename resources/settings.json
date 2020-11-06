@@ -1,9 +1,10 @@
 {
-  "appliances":["dishwasher", "fridge"],
+  "appliances":["dishwasher", "fridge", "washingmachine"],
   "seed" : 12345,
   "house_ID" : 1,
   "simulation_days": 1,
   "sampling_interval_seconds": 1,
   "fridge_model" : 1,
-  "dishwash_model" : 1
+  "dishwash_model" : 1,
+  "washingmachine_model" : 1
 }
