@@ -5,7 +5,7 @@ from multi_appliances import *
 from datetime import datetime
 
 global settings
-SECOND_TENTHS_IN_A_DAY = 864000
+SECOND_TENTHS_IN_A_DAY: int = 864000
 APPLIANCE_MAPPER = {
     # PERIODICAL APPLIANCES
     "fridge": (lambda x: fridge(x)),
@@ -31,11 +31,11 @@ def generate_appliance_series(appliance):
 
 
 def generate_dataset():
+    sampling_interval = int(settings['sampling_interval_seconds'])
     timestamps = pd.date_range(datetime.today().strftime('%Y-%m-%d'),
-                               periods=settings['simulation_days'] * SECOND_TENTHS_IN_A_DAY,
-                               freq='{}S'.format(settings['sampling_interval_seconds'])).tz_localize(tz=None)
+                               periods=settings['simulation_days'] * SECOND_TENTHS_IN_A_DAY / 10 * sampling_interval,
+                               freq='{}S'.format(str(sampling_interval))).tz_localize(tz=None)
     aggregate_series = pd.Series(0.0, index=timestamps)
-
     for appliance in settings['appliances']:
         appliance_series = generate_appliance_series(appliance)
         appliance_series.to_csv('target/{}/{}.csv'.format(settings['house_ID'], appliance), header=False)
