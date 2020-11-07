@@ -1,11 +1,9 @@
 import ast
-import json
 import os
 from periodical_appliances import *
 from multi_appliances import *
 from datetime import datetime
 
-global settings
 SECOND_TENTHS_IN_A_DAY: int = 864000
 APPLIANCE_MAPPER = {
     # PERIODICAL APPLIANCES
@@ -14,6 +12,7 @@ APPLIANCE_MAPPER = {
     "dishwasher": (lambda x: dishwasher(x)),
     "washingmachine": (lambda x: washingmachine(x)),
     "microwave": (lambda x: microwave(x)),
+    "heater": (lambda x: heater(x)),
 }
 
 

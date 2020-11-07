@@ -136,3 +136,51 @@ def microwave(seconds_tenths_in_a_day):
         data[activation_instant + i] = series[i]
 
     return data
+
+
+def heater(seconds_tenths_in_a_day):
+    config = configparser.ConfigParser()
+    config.read('resources/config.ini')
+    data = np.zeros(seconds_tenths_in_a_day, dtype=None)
+
+    # With a certain probability heater is not used during this day
+    heater_usage_prob = float(config['usage_probabilities']['heater_usage_prob'])
+    x = np.random.uniform()
+    if x > heater_usage_prob:
+        return data
+
+    # Reading heater model from configuration file
+    heater_model = config['models']['heater_model']
+
+    # Reading the number of possible pattern for the specified model
+    heater_patterns = int(config['patterns_for_models']['heater' + str(heater_model)])
+
+    # Select a random pattern between those available and building the corresponding series
+    x = np.random.randint(1, heater_patterns + 1)
+    filename = 'data/heater/heater_house' + str(heater_model) + "_" + str(x) + ".CSV"
+    series = pd.read_csv(filename, header=None, usecols=[1])[1]
+
+    # Altering series
+    heater_factor = float(config['alterations']['heater_factor'])
+    heater_noise_factor = float(config['alterations']['heater_noise_factor'])
+    for i in range(len(series)):
+        series[i] = series[i] * np.random.uniform(heater_factor - heater_noise_factor,
+                                                  heater_factor + heater_noise_factor)
+
+    # Choosing a duration for the usage of the appliance and expand the original pattern
+    usage_duration = np.random.randint(int(config['usage_duration']['heater_min']),
+                                       int(config['usage_duration']['heater_max']))
+    series = interpolate(usage_duration, len(series), series)
+
+    # Choosing a start instant
+    heater_start = int(config['usage_start']['heater_start'])
+    heater_end = int(config['usage_start']['heater_end'])
+    mu = np.random.randint(heater_start, heater_end)
+    sigma = int(config['usage_start']['heater_sigma'])
+    activation_instant = int(np.random.normal(mu, sigma))
+
+    # Building microwave data
+    for i in range(len(series)):
+        data[activation_instant + i] = series[i]
+
+    return data
