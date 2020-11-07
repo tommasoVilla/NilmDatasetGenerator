@@ -15,7 +15,6 @@ APPLIANCE_MAPPER = {
     "microwave": (lambda x: microwave(x)),
 }
 
-#prova
 def generate_appliance_series(appliance):
     np_series = np.array([])
 
