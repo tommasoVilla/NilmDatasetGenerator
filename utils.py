@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def interpolate(final_length, current_length, current_data):
     """
     Expand current_data until reach final_length thought interpolation of missing value

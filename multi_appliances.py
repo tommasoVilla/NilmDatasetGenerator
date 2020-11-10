@@ -1,186 +1,107 @@
 import configparser
-import numpy as np
-import pandas as pd
+
 from utils import *
+import pandas as pd
+import main
+
+FIXED_DURATION = {"dishwasher": True,
+                  "washingmachine": True,
+                  "microwave": False,
+                  "heater": False}
 
 
-def dishwasher(seconds_tenths_in_a_day):
-    config = configparser.ConfigParser()
-    config.read('resources/config.ini')
-    data = np.zeros(seconds_tenths_in_a_day, dtype=None)
+def multi_appliance_build_data(appliance):
 
-    # With a certain probability dishwasher is not used during this day
-    dishwasher_usage_prob = float(config['usage_probabilities']['dishwasher_usage_prob'])
-    x = np.random.uniform()
-    if x > dishwasher_usage_prob:
+    data = np.zeros(main.SECOND_TENTHS_IN_A_DAY, dtype=None)
+
+    if not is_used(appliance):
         return data
 
-    # Reading dishwasher model from configuration file
-    dishwasher_model = config['models']['dishwasher_model']
+    series = choose_pattern(appliance)
+    series = altering_series(series, appliance)
+    if not FIXED_DURATION[appliance]:
+        series = change_duration(series, appliance)
 
-    # Reading the number of possible pattern for the specified model
-    dishwasher_patterns = int(config['patterns_for_models']['dishwasher' + str(dishwasher_model)])
-
-    # Select a random pattern between those available and building the corresponding series
-    x = np.random.randint(1, dishwasher_patterns + 1)
-    filename = 'data/dishwasher/dishwasher_house' + str(dishwasher_model) + "_" + str(x) + ".CSV"
-    series = pd.read_csv(filename, header=None, usecols=[1])[1]
-
-    # Altering series
-    dishwasher_factor = float(config['alterations']['dishwasher_factor'])
-    dishwasher_noise_factor = float(config['alterations']['dishwasher_noise_factor'])
-    for i in range(len(series)):
-        series[i] = series[i] * np.random.uniform(dishwasher_factor - dishwasher_noise_factor,
-                                                  dishwasher_factor + dishwasher_noise_factor)
-
-    # Choosing a start instant
-    dishwasher_start = int(config['usage_start']['dishwasher_start'])
-    dishwasher_end = int(config['usage_start']['dishwasher_end'])
-    mu = np.random.randint(dishwasher_start, dishwasher_end)
-    sigma = int(config['usage_start']['dishwasher_sigma'])
-    activation_instant = int(np.random.normal(mu, sigma))
-
-    # Building dishwasher data
+    activation_instant = choose_activation_instant(appliance)
     for i in range(len(series)):
         data[activation_instant + i] = series[i]
 
     return data
 
 
-def washingmachine(seconds_tenths_in_a_day):
+def choose_activation_instant(appliance):
+    """
+    The activation instant is chosen from a gaussian distribution where sigma is fixed for each appliance and
+    mu is chosen from a uniform distribution between start and end time specified for each appliance
+    """
     config = configparser.ConfigParser()
     config.read('resources/config.ini')
-    data = np.zeros(seconds_tenths_in_a_day, dtype=None)
 
-    # With a certain probability washingmachine is not used during this day
-    washingmachine_usage_prob = float(config['usage_probabilities']['washingmachine_usage_prob'])
-    x = np.random.uniform()
-    if x > washingmachine_usage_prob:
-        return data
-
-    # Reading washingmachine model from configuration file
-    washingmachine_model = config['models']['washingmachine_model']
-
-    # Reading the number of possible pattern for the specified model
-    washingmachine_patterns = int(config['patterns_for_models']['washingmachine' + str(washingmachine_model)])
-
-    # Select a random pattern between those available and building the corresponding series
-    x = np.random.randint(1, washingmachine_patterns + 1)
-    filename = 'data/washingmachine/washingmachine_house' + str(washingmachine_model) + "_" + str(x) + ".CSV"
-    series = pd.read_csv(filename, header=None, usecols=[1])[1]
-
-    # Altering series
-    washingmachine_factor = float(config['alterations']['washingmachine_factor'])
-    washingmachine_noise_factor = float(config['alterations']['washingmachine_noise_factor'])
-    for i in range(len(series)):
-        series[i] = series[i] * np.random.uniform(washingmachine_factor - washingmachine_noise_factor,
-                                                  washingmachine_factor + washingmachine_noise_factor)
-
-    # Choosing a start instant
-    washingmachine_start = int(config['usage_start']['washingmachine_start'])
-    washingmachine_end = int(config['usage_start']['washingmachine_end'])
-    mu = np.random.randint(washingmachine_start, washingmachine_end)
-    sigma = int(config['usage_start']['washingmachine_sigma'])
+    start = int(config['usage_start'][appliance])
+    end = int(config['usage_end'][appliance])
+    sigma = int(config['usage_sigma'][appliance])
+    mu = np.random.randint(start, end)
     activation_instant = int(np.random.normal(mu, sigma))
-
-    # Building washingmachine data
-    for i in range(len(series)):
-        data[activation_instant + i] = series[i]
-
-    return data
+    return activation_instant
 
 
-def microwave(seconds_tenths_in_a_day):
+def is_used(appliance):
+    """
+    There is a certain probability that an appliance is used during a day
+    """
     config = configparser.ConfigParser()
     config.read('resources/config.ini')
-    data = np.zeros(seconds_tenths_in_a_day, dtype=None)
 
-    # With a certain probability microwave is not used during this day
-    microwave_usage_prob = float(config['usage_probabilities']['microwave_usage_prob'])
+    usage_prob = float(config['usage_prob'][appliance])
     x = np.random.uniform()
-    if x > microwave_usage_prob:
-        return data
+    if x > usage_prob:
+        return False
+    return True
 
-    # Reading microwave model from configuration file
-    microwave_model = config['models']['microwave_model']
 
-    # Reading the number of possible pattern for the specified model
-    microwave_patterns = int(config['patterns_for_models']['microwave' + str(microwave_model)])
+def choose_pattern(appliance):
+    """
+    Choosing a pattern for an appliance among the ones related to the specified model
+    """
+    config = configparser.ConfigParser()
+    config.read('resources/config.ini')
 
-    # Select a random pattern between those available and building the corresponding series
-    x = np.random.randint(1, microwave_patterns + 1)
-    filename = 'data/microwave/microwave_house' + str(microwave_model) + "_" + str(x) + ".CSV"
+    model = config['model'][appliance]
+    number_of_patterns = int(config['patterns_for_models'][appliance + str(model)])
+    x = np.random.randint(1, number_of_patterns + 1)
+    filename = 'data/{}/{}_house{}_{}.CSV'.format(appliance, appliance, str(model), str(x))
     series = pd.read_csv(filename, header=None, usecols=[1])[1]
+    return series
 
-    # Altering series
-    microwave_factor = float(config['alterations']['microwave_factor'])
-    microwave_noise_factor = float(config['alterations']['microwave_noise_factor'])
+
+def altering_series(series, appliance):
+    """
+    Each series element i is first multiplied by multiplying_factor, then is set to a value chosen whit a uniform
+    distribution in the range of (series[i] +- serie[i]*noise_percentage)
+    """
+    config = configparser.ConfigParser()
+    config.read('resources/config.ini')
+
+    multiplying_factor = float(config['multiplying_factor'][appliance])
+    noise_factor = float(config['noise_percentage'][appliance])
+
     for i in range(len(series)):
-        series[i] = series[i] * np.random.uniform(microwave_factor - microwave_noise_factor,
-                                                  microwave_factor + microwave_noise_factor)
+        series[i] = series[i] * multiplying_factor
+        series[i] = np.random.uniform(series[i] - series[i]*noise_factor,
+                                      series[i] + series[i]*noise_factor)
+    return series
 
-    # Choosing a duration for the usage of the appliance and expand the original pattern
-    usage_duration = np.random.randint(int(config['usage_duration']['microwave_min']),
-                                       int(config['usage_duration']['microwave_max']))
+
+def change_duration(series, appliance):
+    """
+    The series is expanded through interpolation of a length chosen with a uniform distribution between the min and max
+    usage duration fixed for each appliance
+    """
+    config = configparser.ConfigParser()
+    config.read('resources/config.ini')
+
+    usage_duration_min = int(config['usage_duration_min'][appliance])
+    usage_duration_max = int(config['usage_duration_max'][appliance])
+    usage_duration = np.random.randint(usage_duration_min, usage_duration_max)
     series = interpolate(usage_duration, len(series), series)
-
-    # Choosing a start instant
-    microwave_start = int(config['usage_start']['microwave_start'])
-    microwave_end = int(config['usage_start']['microwave_end'])
-    mu = np.random.randint(microwave_start, microwave_end)
-    sigma = int(config['usage_start']['microwave_sigma'])
-    activation_instant = int(np.random.normal(mu, sigma))
-
-    # Building microwave data
-    for i in range(len(series)):
-        data[activation_instant + i] = series[i]
-
-    return data
-
-
-def heater(seconds_tenths_in_a_day):
-    config = configparser.ConfigParser()
-    config.read('resources/config.ini')
-    data = np.zeros(seconds_tenths_in_a_day, dtype=None)
-
-    # With a certain probability heater is not used during this day
-    heater_usage_prob = float(config['usage_probabilities']['heater_usage_prob'])
-    x = np.random.uniform()
-    if x > heater_usage_prob:
-        return data
-
-    # Reading heater model from configuration file
-    heater_model = config['models']['heater_model']
-
-    # Reading the number of possible pattern for the specified model
-    heater_patterns = int(config['patterns_for_models']['heater' + str(heater_model)])
-
-    # Select a random pattern between those available and building the corresponding series
-    x = np.random.randint(1, heater_patterns + 1)
-    filename = 'data/heater/heater_house' + str(heater_model) + "_" + str(x) + ".CSV"
-    series = pd.read_csv(filename, header=None, usecols=[1])[1]
-
-    # Altering series
-    heater_factor = float(config['alterations']['heater_factor'])
-    heater_noise_factor = float(config['alterations']['heater_noise_factor'])
-    for i in range(len(series)):
-        series[i] = series[i] * np.random.uniform(heater_factor - heater_noise_factor,
-                                                  heater_factor + heater_noise_factor)
-
-    # Choosing a duration for the usage of the appliance and expand the original pattern
-    usage_duration = np.random.randint(int(config['usage_duration']['heater_min']),
-                                       int(config['usage_duration']['heater_max']))
-    series = interpolate(usage_duration, len(series), series)
-
-    # Choosing a start instant
-    heater_start = int(config['usage_start']['heater_start'])
-    heater_end = int(config['usage_start']['heater_end'])
-    mu = np.random.randint(heater_start, heater_end)
-    sigma = int(config['usage_start']['heater_sigma'])
-    activation_instant = int(np.random.normal(mu, sigma))
-
-    # Building microwave data
-    for i in range(len(series)):
-        data[activation_instant + i] = series[i]
-
-    return data
+    return series

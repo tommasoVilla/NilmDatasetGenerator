@@ -1,18 +1,20 @@
 import ast
+import configparser
 import os
 from periodical_appliances import *
 from multi_appliances import *
 from datetime import datetime
 
+
 SECOND_TENTHS_IN_A_DAY: int = 864000
-APPLIANCE_MAPPER = {
+APPLIANCE_TYPE = {
     # PERIODICAL APPLIANCES
-    "fridge": (lambda x: fridge(x)),
+    "fridge": "periodical",
     # MULTI PATTERN APPLIANCES
-    "dishwasher": (lambda x: dishwasher(x)),
-    "washingmachine": (lambda x: washingmachine(x)),
-    "microwave": (lambda x: microwave(x)),
-    "heater": (lambda x: heater(x)),
+    "dishwasher": "multi",
+    "washingmachine": "multi",
+    "microwave": "multi",
+    "heater": "multi",
 }
 
 
@@ -23,7 +25,10 @@ def generate_appliance_series(appliance):
     np_series = np.array([])
 
     for i in range(simulation_days):
-        np_series = np.concatenate([np_series, APPLIANCE_MAPPER[appliance](SECOND_TENTHS_IN_A_DAY)])
+        if APPLIANCE_TYPE[appliance] == "multi":
+            np_series = np.concatenate([np_series, multi_appliance_build_data(appliance)])
+        elif APPLIANCE_TYPE[appliance] == "periodical":
+            np_series = np.concatenate([np_series, periodical_appliance_build_data(appliance)])
 
     series = pd.Series(np_series)
 
@@ -44,26 +49,38 @@ def generate_dataset():
                                freq='{}S'.format(str(sampling_interval))).tz_localize(tz=None)
     aggregate_series = pd.Series(0.0, index=timestamps)
 
-    for appliance in ast.literal_eval(config['models']['appliances']):
+    for appliance in ast.literal_eval(config['model']['appliances']):
         appliance_series = generate_appliance_series(appliance)
-        appliance_series.to_csv('target/{}/{}.csv'.format(config['models']['house_ID'], appliance), header=False)
+        appliance_series.to_csv('target/{}/{}.csv'.format(config['model']['house_ID'], appliance), header=False)
 
         aggregate_series += appliance_series
 
-    aggregate_series.to_csv('target/{}/{}.csv'.format(config['models']['house_ID'], "aggregate"), header=False)
+    aggregate_series.to_csv('target/{}/{}.csv'.format(config['model']['house_ID'], "aggregate"), header=False)
     return
 
 
-if __name__ == '__main__':
+def set_params(config_file):
+    params = configparser.ConfigParser()
+    params.read('resources/params')
+    for category in params.sections():
+        for item in params[category].keys():
+            config_file.set(category, item, params[category][item])
 
+
+if __name__ == '__main__':
     # Load config file and setting random generator seed
     config = configparser.ConfigParser()
     config.read('resources/config.ini')
+    print(config['general']['seed'])
+
+    set_params(config)
+    print(config['general']['seed'])
+
     np.random.seed(int(config['general']['seed']))
 
     # Prepare output folder
     try:
-        os.mkdir('target/{}'.format(config['models']['house_ID']))
+        os.mkdir('target/{}'.format(config['model']['house_ID']))
     except FileExistsError:
         pass
 
