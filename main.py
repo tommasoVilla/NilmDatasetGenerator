@@ -26,9 +26,9 @@ def generate_appliance_series(appliance):
 
     for i in range(simulation_days):
         if APPLIANCE_TYPE[appliance] == "multi":
-            np_series = np.concatenate([np_series, multi_appliance_build_data(appliance)])
+            np_series = np.concatenate([np_series, multi_appliance_build_data(appliance, config)])
         elif APPLIANCE_TYPE[appliance] == "periodical":
-            np_series = np.concatenate([np_series, periodical_appliance_build_data(appliance)])
+            np_series = np.concatenate([np_series, periodical_appliance_build_data(appliance, config)])
 
     series = pd.Series(np_series)
 
@@ -64,6 +64,7 @@ def set_params(config_file):
     params.read('resources/params')
     for category in params.sections():
         for item in params[category].keys():
+            print(params[category][item])
             config_file.set(category, item, params[category][item])
 
 
@@ -71,10 +72,7 @@ if __name__ == '__main__':
     # Load config file and setting random generator seed
     config = configparser.ConfigParser()
     config.read('resources/config.ini')
-    print(config['general']['seed'])
-
     set_params(config)
-    print(config['general']['seed'])
 
     np.random.seed(int(config['general']['seed']))
 

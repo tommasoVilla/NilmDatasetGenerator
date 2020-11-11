@@ -4,12 +4,13 @@ import configparser
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-
+import main
 
 if __name__ == '__main__':
 
     config = configparser.ConfigParser()
     config.read('resources/config.ini')
+    main.set_params(config)
 
     directory_path = 'target/{}/'.format(config['model']['house_ID'])
 

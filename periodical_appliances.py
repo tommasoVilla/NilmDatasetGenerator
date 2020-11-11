@@ -5,13 +5,11 @@ import pandas as pd
 import main
 
 
-def periodical_appliance_build_data(appliance):
+def periodical_appliance_build_data(appliance, config):
     """
     After the reading of the unique pattern, this function calculate how many times the pattern fits in a day and
     generate data reproducing that patter all day long
     """
-    config = configparser.ConfigParser()
-    config.read('resources/config.ini')
 
     model = config['model'][appliance]
     filename = 'data/{}/{}_house{}.CSV'.format(appliance, appliance, str(model))
