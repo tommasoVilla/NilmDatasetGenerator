@@ -59,20 +59,19 @@ def generate_dataset():
     return
 
 
-def set_params(config_file):
-    params = configparser.ConfigParser()
-    params.read('resources/params')
-    for category in params.sections():
-        for item in params[category].keys():
-            print(params[category][item])
-            config_file.set(category, item, params[category][item])
+def set_params(config_file, params_file):
+    for category in params_file.sections():
+        for item in params_file[category].keys():
+            config_file.set(category, item, params_file[category][item])
 
 
 if __name__ == '__main__':
     # Load config file and setting random generator seed
     config = configparser.ConfigParser()
     config.read('resources/config.ini')
-    set_params(config)
+    params = configparser.ConfigParser()
+    params.read('params/params_4_3')
+    set_params(config, params)
 
     np.random.seed(int(config['general']['seed']))
 

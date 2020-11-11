@@ -3,6 +3,7 @@ import configparser
 import numpy as np
 import pandas as pd
 import main
+from utils import altering_series
 
 
 def periodical_appliance_build_data(appliance, config):
@@ -21,5 +22,7 @@ def periodical_appliance_build_data(appliance, config):
     for i in range(pattern_in_a_day):
         for j in range(pattern_duration):
             data[i * pattern_duration + j] = series[j]
+
+    data = altering_series(data, appliance, config)
 
     return data

@@ -1,17 +1,18 @@
 #### CHANGE THIS FILE TO CONFIGURE HOUSE ####
-
+[general]
+seed =  12345
 
 [model]
-house_ID = 1
+house_ID = 5
 appliances = ["washingmachine", "fridge", "dishwasher", "microwave", "heater"]
 #7 Model available
-fridge = 2
+fridge = 1
 #5 Models available
-dishwasher = 4
+dishwasher = 1
 #4 Models available
-washingmachine = 2
+washingmachine = 1
 #5 Model available
-microwave = 2
+microwave = 1
 #3 Model available
 heater = 1
 
@@ -23,22 +24,30 @@ microwave = 1.0
 heater = 1.0
 
 [noise_percentage]
-fridge = 0.1
-dishwasher = 0.1
-washingmachine = 0.9
-microwave = 0.01
-heater = 0.04
+fridge = 0.05
+dishwasher = 0.05
+washingmachine = 0.05
+microwave = 0.05
+heater = 0.05
 
 [usage_start]
-dishwasher = 216000
-washingmachine = 216000
-microwave = 216000
-heater = 640000
+#12:30
+dishwasher = 450000
+#14:00
+washingmachine = 504000
+#19:30
+microwave = 702000
+#18:00
+heater = 648000
 [usage_end]
-dishwasher = 378000
-washingmachine = 378000
-microwave = 378000
-heater = 810000
+#16.45
+dishwasher = 603000
+#16:45
+washingmachine = 603000
+#20.45
+microwave = 747000
+#19:00
+heater = 684000
 
 [usage_prob]
 dishwasher = 1

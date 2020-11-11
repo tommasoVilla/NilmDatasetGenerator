@@ -1,5 +1,4 @@
 import configparser
-
 from utils import *
 import pandas as pd
 import main
@@ -65,24 +64,6 @@ def choose_pattern(appliance, config):
     x = np.random.randint(1, number_of_patterns + 1)
     filename = 'data/{}/{}_house{}_{}.CSV'.format(appliance, appliance, str(model), str(x))
     series = pd.read_csv(filename, header=None, usecols=[1])[1]
-    return series
-
-
-def altering_series(series, appliance, config):
-    """
-    Each series element i is first multiplied by multiplying_factor, then is set to a value chosen whit a uniform
-    distribution in the range of (series[i] +- serie[i]*noise_percentage)
-    """
-
-    multiplying_factor = float(config['multiplying_factor'][appliance])
-    noise_factor = float(config['noise_percentage'][appliance])
-
-    print(str(multiplying_factor))
-
-    for i in range(len(series)):
-        series[i] = series[i] * multiplying_factor
-        series[i] = np.random.uniform(series[i] - series[i]*noise_factor,
-                                      series[i] + series[i]*noise_factor)
     return series
 
 
