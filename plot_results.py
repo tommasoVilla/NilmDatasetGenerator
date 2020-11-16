@@ -10,9 +10,9 @@ if __name__ == '__main__':
 
     config = configparser.ConfigParser()
     config.read('resources/config.ini')
-    params = configparser.ConfigParser()
-    params.read('params/params_4_3')
-    main.set_params(config, params)
+    #params = configparser.ConfigParser()
+    #params.read('params/params_1_1.ini')
+    #main.set_params(config, params)
 
     try:
         os.mkdir('plots/{}'.format(config['model']['house_ID']))

@@ -6,7 +6,12 @@ import main
 FIXED_DURATION = {"dishwasher": True,
                   "washingmachine": True,
                   "microwave": False,
-                  "heater": False}
+                  "heater": False,
+                  "fan": False,
+                  "toaster": True,
+                  "tv": False,
+                  "lamp": False,
+                  "pc": False}
 
 
 def multi_appliance_build_data(appliance, config):

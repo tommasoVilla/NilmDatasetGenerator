@@ -9,12 +9,18 @@ from datetime import datetime
 SECOND_TENTHS_IN_A_DAY: int = 864000
 APPLIANCE_TYPE = {
     # PERIODICAL APPLIANCES
+    "router": "periodical",
     "fridge": "periodical",
     # MULTI PATTERN APPLIANCES
     "dishwasher": "multi",
     "washingmachine": "multi",
     "microwave": "multi",
     "heater": "multi",
+    "fan": "multi",
+    "toaster": "multi",
+    "tv": "multi",
+    "lamp": "multi",
+    "pc": "multi"
 }
 
 
@@ -69,9 +75,9 @@ if __name__ == '__main__':
     # Load config file and setting random generator seed
     config = configparser.ConfigParser()
     config.read('resources/config.ini')
-    params = configparser.ConfigParser()
-    params.read('params/params_4_3')
-    set_params(config, params)
+    #params = configparser.ConfigParser()
+    #params.read('params/params_1_1.ini')
+    #set_params(config, params)
 
     np.random.seed(int(config['general']['seed']))
 
