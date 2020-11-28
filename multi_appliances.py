@@ -11,7 +11,9 @@ FIXED_DURATION = {"dishwasher": True,
                   "toaster": True,
                   "tv": False,
                   "lamp": False,
-                  "pc": False}
+                  "pc": False,
+                  "coffeemachine": True
+                  }
 
 
 def multi_appliance_build_data(appliance, config):
@@ -22,15 +24,25 @@ def multi_appliance_build_data(appliance, config):
         return data
 
     series = choose_pattern(appliance, config)
+    if appliance not in main.NOISE:
+        series = scale_pattern(series, appliance, config)
     series = altering_series(series, appliance, config)
     if not FIXED_DURATION[appliance]:
         series = change_duration(series, appliance, config)
 
     activation_instant = choose_activation_instant(appliance, config)
+    if activation_instant + len(series) >= main.SECOND_TENTHS_IN_A_DAY:
+        activation_instant = activation_instant - ((activation_instant + len(series)) - main.SECOND_TENTHS_IN_A_DAY)
     for i in range(len(series)):
         data[activation_instant + i] = series[i]
 
     return data
+
+
+def scale_pattern(series, appliance, config):
+    new_max = float(config['scale_factor'][appliance])
+    old_max = np.max(series)
+    return series * (new_max/old_max)
 
 
 def choose_activation_instant(appliance, config):

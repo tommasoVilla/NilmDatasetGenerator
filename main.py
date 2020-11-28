@@ -7,6 +7,7 @@ from datetime import datetime
 
 
 SECOND_TENTHS_IN_A_DAY: int = 864000
+NOISE = ["fan", "toaster", "tv", "lamp", "pc", "coffeemachine", "router"]
 APPLIANCE_TYPE = {
     # PERIODICAL APPLIANCES
     "router": "periodical",
@@ -20,8 +21,8 @@ APPLIANCE_TYPE = {
     "toaster": "multi",
     "tv": "multi",
     "lamp": "multi",
-    "pc": "multi"
-}
+    "pc": "multi",
+    "coffeemachine": "multi"}
 
 
 def generate_appliance_series(appliance):
@@ -46,7 +47,17 @@ def generate_appliance_series(appliance):
     return series.resample('{}S'.format(sampling_interval)).mean()
 
 
-def generate_dataset():
+def generate_dataset(config):
+    # Set random generator seed
+    np.random.seed(int(config['general']['seed']))
+
+    # Prepare output folder
+    try:
+        os.mkdir('target/{}'.format(config['model']['house_ID']))
+    except FileExistsError:
+        pass
+
+    # Generate dataset
     sampling_interval = int(config['general']['sampling_interval_seconds'])
     simulation_days = int(config['general']['simulation_days'])
 
@@ -57,7 +68,8 @@ def generate_dataset():
 
     for appliance in ast.literal_eval(config['model']['appliances']):
         appliance_series = generate_appliance_series(appliance)
-        appliance_series.to_csv('target/{}/{}.csv'.format(config['model']['house_ID'], appliance), header=False)
+        if appliance not in NOISE:
+            appliance_series.to_csv('target/{}/{}.csv'.format(config['model']['house_ID'], appliance), header=False)
 
         aggregate_series += appliance_series
 
@@ -72,22 +84,27 @@ def set_params(config_file, params_file):
 
 
 if __name__ == '__main__':
-    # Load config file and setting random generator seed
-    config = configparser.ConfigParser()
-    config.read('resources/config.ini')
-    #params = configparser.ConfigParser()
-    #params.read('params/params_1_1.ini')
-    #set_params(config, params)
 
-    np.random.seed(int(config['general']['seed']))
+    houses = 120
 
-    # Prepare output folder
-    try:
-        os.mkdir('target/{}'.format(config['model']['house_ID']))
-    except FileExistsError:
-        pass
+    for i in range(1, houses + 1):
 
-    # Generate dataset
-    generate_dataset()
+        # Load config file and setting random generator seed
+        config = configparser.ConfigParser()
+        config.read('resources/config.ini')
+        params = configparser.ConfigParser()
+        params.read('params/params{}.ini'.format(str(i)))
+        set_params(config, params)
+
+        # Generate dataset
+        generate_dataset(config)
+
+    # config = configparser.ConfigParser()
+    # config.read('resources/config.ini')
+    # params = configparser.ConfigParser()
+    # params.read('params/params6.ini')
+    # set_params(config, params)
+    # generate_dataset(config)
+
 
     exit()

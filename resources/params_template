@@ -5,7 +5,7 @@ seed =  12345
 [model]
 house_ID = 5
 appliances = ["washingmachine", "fridge", "dishwasher", "microwave", "heater", "fan",
-              "tv", "pc", "toaster", "lamp", "router"]
+              "tv", "pc", "toaster", "lamp", "router", "coffeemachine"]
 #4 Model available
 fridge = 1
 dishwasher = 1
